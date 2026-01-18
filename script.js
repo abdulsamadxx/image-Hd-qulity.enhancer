@@ -20,18 +20,33 @@ img.onload = () => {
 };
 
 function applyFilter() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  /* 🔹 Step 1: Beauty Smooth Layer */
+  ctx.filter = "blur(2px)";
+  ctx.globalAlpha = 0.35;
+  ctx.drawImage(img, 0, 0);
+
+  /* 🔹 Step 2: Original Image */
+  ctx.filter = "none";
+  ctx.globalAlpha = 1;
+  ctx.drawImage(img, 0, 0);
+
+  /* 🔹 Step 3: Pleasant OG Color Filter */
   ctx.filter = `
-    brightness(1.1)
-    contrast(1.15)
-    saturate(1.25)
-    sepia(0.08)
+    brightness(1.12)
+    contrast(1.18)
+    saturate(1.3)
+    sepia(0.07)
   `;
   ctx.drawImage(img, 0, 0);
+
+  ctx.filter = "none";
 }
 
 function downloadImage() {
   const link = document.createElement("a");
-  link.download = "pleasant-og.png";
-  link.href = canvas.toDataURL();
+  link.download = "pleasant-og-beauty.png";
+  link.href = canvas.toDataURL("image/png");
   link.click();
 }
