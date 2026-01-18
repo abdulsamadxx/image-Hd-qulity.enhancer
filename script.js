@@ -34,27 +34,23 @@ upload.addEventListener("change", (e) => {
   reader.readAsDataURL(file);
 });
 
-/* ================= APPLY AI FILTER ================= */
+/* ================= APPLY FILTER ================= */
 applyBtn.addEventListener("click", async () => {
   if (!imageLoaded) {
     alert("⚠️ Please upload an image first");
     return;
   }
 
-  // Base image
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(img, 0, 0);
 
   let faceDetected = false;
 
-  /* 🔹 Face Detection */
+  // FACE DETECTION
   const detections = await faceapi
     .detectAllFaces(
       canvas,
-      new faceapi.TinyFaceDetectorOptions({
-        inputSize: 512,
-        scoreThreshold: 0.3
-      })
+      new faceapi.TinyFaceDetectorOptions({ inputSize: 512, scoreThreshold: 0.2 })
     )
     .withFaceLandmarks();
 
@@ -66,19 +62,18 @@ applyBtn.addEventListener("click", async () => {
     detections.forEach(det => {
       const landmarks = det.landmarks;
 
-      /* 🔹 FACE SMOOTH */
+      // FACE SMOOTH
       const box = det.detection.box;
       ctx.save();
       ctx.beginPath();
       ctx.rect(box.x, box.y, box.width, box.height);
       ctx.clip();
-
-      ctx.globalAlpha = 0.35;
-      ctx.filter = "blur(2.5px)";
+      ctx.globalAlpha = 0.5;
+      ctx.filter = "blur(3px)";
       ctx.drawImage(img, 0, 0);
       ctx.restore();
 
-      /* 🔹 NOSE SLIM */
+      // NOSE SLIM
       const nose = landmarks.getNose();
       const left = nose[0].x;
       const right = nose[nose.length - 1].x;
@@ -87,39 +82,36 @@ applyBtn.addEventListener("click", async () => {
 
       ctx.save();
       ctx.beginPath();
-      ctx.rect(left - 6, top, (right - left) + 12, bottom - top);
+      ctx.rect(left - 8, top, (right - left) + 16, bottom - top);
       ctx.clip();
-
-      ctx.globalAlpha = 0.5;
-      ctx.filter = "blur(1.8px)";
-      ctx.drawImage(img, -6, 0);
+      ctx.globalAlpha = 0.6;
+      ctx.filter = "blur(2px)";
+      ctx.drawImage(img, -8, 0);
       ctx.restore();
 
-      /* 🔹 EYES BRIGHTEN */
+      // EYES BRIGHTEN
       [...landmarks.getLeftEye(), ...landmarks.getRightEye()].forEach(p => {
         ctx.save();
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 7, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
         ctx.clip();
-
-        ctx.globalAlpha = 0.55;
-        ctx.filter = "brightness(1.6) contrast(1.3)";
+        ctx.globalAlpha = 0.6;
+        ctx.filter = "brightness(1.8) contrast(1.4)";
         ctx.drawImage(img, 0, 0);
         ctx.restore();
       });
     });
   }
 
-  /* 🔹 FULL IMAGE AZULI COLOR FILTER */
-  ctx.filter = "brightness(1.12) contrast(1.2) saturate(1.25) hue-rotate(-8deg)";
+  // FULL IMAGE ENHANCEMENT (ALWAYS)
+  ctx.filter = "brightness(1.15) contrast(1.25) saturate(1.3) hue-rotate(-8deg)";
   ctx.drawImage(img, 0, 0);
 
-  /* 🔹 CLARITY / SHARP ENHANCEMENT */
+  // CLARITY / SHARP
   ctx.globalCompositeOperation = "overlay";
-  ctx.filter = "contrast(1.15)";
+  ctx.filter = "contrast(1.2)";
   ctx.drawImage(img, 0, 0);
 
-  /* RESET */
   ctx.globalCompositeOperation = "source-over";
   ctx.filter = "none";
 
@@ -133,7 +125,6 @@ applyBtn.addEventListener("click", async () => {
 /* ================= DOWNLOAD ================= */
 downloadBtn.addEventListener("click", () => {
   if (!imageLoaded) return;
-
   const a = document.createElement("a");
   a.download = "azuli-ai-pro.png";
   a.href = canvas.toDataURL("image/png");
